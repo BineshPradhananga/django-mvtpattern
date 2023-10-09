@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+  hmvcapp:
+    env_file: .env
+    container_name: ${CONTAINER_NAME_PREFIX}app
+    build:
+      context: ./build
+      args:
+        PROJECT_PATH: ${PROJECT_PATH}
+        PHP_FPM_VERSION: ${PHP_FPM_VERSION}
+        INSTALL_NODEJS: ${INSTALL_NODEJS}
+    restart: unless-stopped
+    tty: true
+    working_dir: ${PROJECT_PATH}
+    volumes:
+      - ./code:${PROJECT_PATH}
+      - ./build/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./build/php/php-fpm.d/www2.conf:/usr/local/etc/php-fpm.d/www2.conf  
+    networks:
+      local:
+        aliases:
+          - ${NETWORK}
+
+  hmvcdb:
+      image: mysql:${MYSQL_VERSION}
+      container_name: ${CONTAINER_NAME_PREFIX}db
+      restart: unless-stopped
+      ports:
+        - ${HOST_DB_PORT}:3306
+      environment:
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_USER_PASSWORD: ${MYSQL_USER_PASSWORD}
+        SERVICE_TAGS: dev
+        SERVICE_NAME: mysql
+      volumes:
+        - hmvcdb:/var/lib/mysql/
+        - ./build/mysql/my.cnf:/etc/mysql/my.cnf
+      networks:
+        local:
+          aliases:
+            - ${NETWORK}
+  
+  hmvcweb:
+    image: nginx
+    container_name: ${CONTAINER_NAME_PREFIX}web
+    ports:
+      - ${NGINX_HTTP_PORT}:80
+      #- ${NGINX_HTTPS_PORT}:443
+    volumes:
+      - ./build/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./build/nginx/certs/:/etc/nginx/certs
+      - ./code:${PROJECT_PATH}:consistent
+      - ./build/nginx/log:/var/log/nginx
+      - ./build/nginx/nginx.conf:/etc/nginx/nginx.conf
+    restart: unless-stopped
+    depends_on:
+      - hmvcapp
+    networks:
+      local:
+        aliases:
+          - ${NETWORK}
+
+#Docker Networks
+networks:
+  local:
+    name: ${NETWORK}
+#Volumes
+volumes:
+  hmvcdb:
+    name: ${CONTAINER_NAME_PREFIX}db
