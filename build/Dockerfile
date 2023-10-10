@@ -1,6 +1,6 @@
-ARG PHP_FPM_VERSION=7.4-fpm
+ARG PHP_FPM_VERSION=8.1-fpm
 FROM php:$PHP_FPM_VERSION
-LABEL maintainer="rajshakya2000@gmail.com"
+LABEL maintainer="bineshpradhananga90@gmail.com"
 
 ARG PROJECT_PATH=/var/www
 ARG INSTALL_NODEJS=false
@@ -38,8 +38,8 @@ RUN docker-php-ext-configure gd  \
 RUN docker-php-ext-install gd
 
 #Install mcrypt
-RUN pecl install mcrypt-1.0.3 \
-    && docker-php-ext-enable mcrypt
+# RUN pecl install mcrypt-1.0.3 \
+#     && docker-php-ext-enable mcrypt
 
 # Installing composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

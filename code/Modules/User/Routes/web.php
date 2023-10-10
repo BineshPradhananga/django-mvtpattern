@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,6 +11,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::prefix('user')->group(function() {
+    Route::get('register', 'UserController@register');
+    Route::post('register', 'UserController@registerPost');
+    Route::get('/login', 'UserController@login');
+    Route::post('/login', 'UserController@postLogin');
+});
+Route::get('/', 'UserController@dashboard');
